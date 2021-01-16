@@ -4,7 +4,7 @@
 #include <sys/types.h> //fork, pid_t
 #include <sys/wait.h> //wait du parent
 #include <stdlib.h>
-
+#include <string.h>
 
 int main(int argc, char * argv[]) {
 
@@ -13,29 +13,37 @@ int main(int argc, char * argv[]) {
     char * variable[2] = {argv[1], NULL};
     char * buffer = NULL;
 	size_t	buf_size = 2048;
+	char **cmd = NULL;
 
         //fork
         pid_t pid = fork();
         if (pid == -1)
         {
             // Il y a une erreur
-            perror("fork a echoue");
+            perror("fork");
             return EXIT_FAILURE;
 
         } else if (pid > 0)
         {
             // On est dans le père
             wait(&status);
-            perror("fork");
+            perror("wait père");
             while (getline(&buffer, &buf_size, stdin) > 0)
             {
-                system(buffer);
+                //Pipeline
+                if (strstr(buffer, '|')!= NULL)
+                {
+                    cmd = strtok(buffer, '|');
+                }
+
+
+                system(cmd);
                 write(1, "Daoud@root> ", 12);
             }
 
         } else {
             // On est dans le fils
-            perror("fork");
+            perror("fork fils");
             execvp(programName,variable);
 
         }
