@@ -1,10 +1,3 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h> //fork, pid_t
-#include <sys/wait.h>  //wait
-#include <stdlib.h>
-#include <string.h>    //strstr
-
 /*
 
                 MINI SHELL - LANGAGE C
@@ -17,6 +10,33 @@
 
 */
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h> //fork, pid_t
+#include <sys/wait.h>  //wait
+#include <stdlib.h>
+#include <string.h>    //strstr
+
+#define MAXLIST 100 // nombre maximum de commandes à prendre en charge
+
+#define clear() printf("\033[H\033[J") //Equivalent de la commande clear en UNIX
+
+// Affichage de bienvenue du SHELL
+void beginShell()
+{
+    clear();
+    char* username = "Darnuria";
+    printf("\n\n\n\n******************"
+        "************************");
+    printf("\n\n\n\t****MINI SHELL****");
+    printf("\n\n\t-BIENVENUE %s !-", username);
+    printf("\n\n\n\n*******************"
+        "***********************");
+    printf("\n\n\nUSER is: @%s", username);
+    printf("\n");
+    sleep(3);
+    clear();
+}
 
 int main(int argc, char * argv[]) {
 
@@ -26,44 +46,52 @@ int main(int argc, char * argv[]) {
     char * buffer = NULL;
 	size_t	buf_size = 2048;
 	char * pipe [1] = {'|'};
+	char * path = NULL;
 
-        //fork
-        pid_t pid = fork();
-        if (pid == -1)
-        {
-            // Il y a une erreur
-            perror("fork");
-            return EXIT_FAILURE;
+    //Lancement du Shell
+    beginShell();
 
-        } else if (pid > 0)
-            {// On est dans le père
+    //fork
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        // Il y a une erreur
+        perror("fork");
+        return EXIT_FAILURE;
 
-                wait(&status);
-                perror("wait père");
+    } else if (pid > 0)
+        {// On est dans le père
 
-                //Tant que l'user saisis
-                while (getline(&buffer, &buf_size, stdin) > 0)
-                {
+            wait(&status);
+            perror("wait père");
+            write(1, "Darnuria@root> ", 15);
 
-                    //Execution de la commande
-                    system(buffer);
+            //Tant que l'user saisis
+            while (getline(&buffer, &buf_size, stdin) > 0)
+            {
 
-                    //Status de la commande
-                    if (strstr(buffer, pipe))
-                        perror("Multi commandes");
-                    else
-                        perror("Commande");
+                //cd
 
-                    //Prompt
-                    write(1, "Daoud@root> ", 12);
-                }
 
-            } else {// On est dans le fils
+                //Execution de la commande
+                system(buffer);
 
-                perror("fork fils");
-                execvp(programName,variable);
+                //Status de la commande
+                if (strstr(buffer, pipe))
+                    perror("Multi commandes");
+                else
+                    perror("commande");
 
-        }
+                //Prompt
+                write(1, "Darnuria@root> ", 15);
+            }
+
+        } else {// On est dans le fils
+
+            perror("fork fils");
+            execvp(programName,variable);
+
+    }
     printf("Fin du Shell");
     return EXIT_SUCCESS;
 }
